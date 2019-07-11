@@ -3,6 +3,7 @@
 import os
 import random
 import torchfile
+import torch
 from torch.utils.data import Dataset, DataLoader, Sampler
 
 from utils.util import onehot_encoder
@@ -64,20 +65,27 @@ class BirdsBatchSampler(Sampler):
             return self.batch_size
 
 def collate_fn(in_batch):
-    out_batch = []
+    idx_list = []
+    image_list = []
+    text_list = []
     for idx, class_data in enumerate(in_batch):
-        label = idx
+        idx_list.append(idx)
 
         image_idx = random.randint(0, class_data['image'].shape[0]-1)
         image_pos_idx = random.randint(0, class_data['image'].shape[2]-1)
         image = class_data['image'][image_idx,:,image_pos_idx]
+        image_list.append(image)
 
         text_idx = random.randint(0, class_data['text'].shape[2]-1)
         raw_text = class_data['text'][image_idx,:,text_idx]
         text = onehot_encoder(raw_text)
-        out_batch.append([idx, image, text])
+        text_list.append(text)
 
-    return out_batch
+    image_tensor = torch.Tensor(image_list)
+    # reshape text to a tensor of [batch, alpha_size, sequence_len]
+    text_tensor = torch.Tensor(text_list).permute(0,2,1)
+
+    return [idx_list, image_tensor, text_tensor]
 
 
 class BirdsDataLoader(DataLoader):
