@@ -8,17 +8,18 @@ class TextEncoder(nn.Module):
         # 201 x alphasize(71)
         # the input should be (N, C_in, L) = [#batch, 71, 201]
         # which in torch7 the input is (N, L, C_in) -> (N, L, C_out)
-        nn.Conv1d(alphasize, 384, 4), # (201-4+1, 384) = (198, 384)
+
+        nn.Conv1d(alphasize, 384, 4), # (201, 71) -> (198, 384)
         nn.ReLU(),
-        nn.MaxPool1d(3, 3), # ((198-3)/3+1, 384) = (68, 384)
+        nn.MaxPool1d(3, 3), # (198, 384) -> ((198-3)/3+1, 384) = (66, 384)
         # 66 x 384
-        nn.Conv1d(384, 512, 4),
+        nn.Conv1d(384, 512, 4), # (66, 384) -> (63, 512)
         nn.ReLU(),
-        nn.MaxPool1d(3, 3),
+        nn.MaxPool1d(3, 3), # (63, 512) -> (21, 512)
         # 21 x 512
-        nn.Conv1d(512, cnn_dim, 4),
+        nn.Conv1d(512, cnn_dim, 4), # (21, 512) -> (18, 256)
         nn.ReLU(),
-        nn.MaxPool1d(3, 2)
+        nn.MaxPool1d(3, 2) # (18, 256) -> ((18-3)/2+1, 256) = (8, 256)
         # 8 x 256
         )
 
