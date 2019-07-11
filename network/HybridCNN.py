@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch
 
 class TextEncoder(nn.Module):
-    def __init__(self, alphasize, cnn_dim = 256, dropout = 0):
+    def __init__(self, alphasize, cnn_dim = 256, dropout = 0, emb_dim = 1024):
         super(TextEncoder, self).__init__()
         self.cnn_net = nn.Sequential(
         # 201 x alphasize(71)
@@ -31,6 +31,7 @@ class TextEncoder(nn.Module):
         # length, batch size,
         self.rnn_net = nn.RNNCell(cnn_dim, cnn_dim, nonlinearity = 'relu')
 
+        self.linear_net = nn.Linear(cnn_dim, emb_dim)
 
     def forward(self, input):
         """
@@ -42,16 +43,20 @@ class TextEncoder(nn.Module):
 
         # change the shape of in
         output = output.view([length, n_batch, n_channel])
+
         h0 = torch.zeros(n_batch, n_channel)
         input0 = torch.ones(n_batch, n_channel)
         h = self.rnn_net(input0, h0)
 
-        sum_hiden_layers = h0
+        sum_hiden_layer = h0
         for i in range(length):
             h = self.rnn_net(output[i], h)
-            sum_hiden_layers += h
-
-        return sum_hiden_layers / length
+            sum_hiden_layer += h
+        hiden_layer = sum_hiden_layer / length
+        # print(hiden_layer.shape)
+        hiden_layer = self.linear_net(hiden_layer)
+        print(self.linear_net)
+        return hiden_layer
         # return #batch x 256, the encoder
 
 if __name__ == '__main__':
