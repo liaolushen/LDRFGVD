@@ -50,7 +50,7 @@ class TextEncoder(nn.Module):
         sum_hiden_layer = h0
         for i in range(length):
             h = self.rnn_net(output[i], h)
-            sum_hiden_layer += h
+            sum_hiden_layer = sum_hiden_layer + h
         hiden_layer = sum_hiden_layer / length
         # print(hiden_layer.shape)
         hiden_layer = self.linear_net(hiden_layer)
